@@ -15,14 +15,14 @@ admin=644812536
 admins=[
     644812536
 ]
-#ip='193.187.173.232'
+ip='193.187.173.232'
 #PGPASSWD='4A0V8Gdf'
 #PGUSER='gino2'
 #DATABASE='gino_shop_game'
 
-ip='localhost'
+#ip='localhost'
 PGPASSWD='4A0V8Gdf'
-PGUSER='gino2local'
+PGUSER='gino2_reserve'
 DATABASE='gino2'
 POSTGRES_URI=f'postgresql://{PGUSER}:{PGPASSWD}@{ip}/{DATABASE}'
 #696800580
