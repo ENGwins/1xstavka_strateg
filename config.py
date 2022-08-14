@@ -22,7 +22,7 @@ ip='193.187.173.232'
 
 #ip='localhost'
 PGPASSWD='4A0V8Gdf'
-PGUSER='gino2_reserve'
-DATABASE='gino2'
+PGUSER='gino2'
+DATABASE='gino2_reserve'
 POSTGRES_URI=f'postgresql://{PGUSER}:{PGPASSWD}@{ip}/{DATABASE}'
 #696800580
