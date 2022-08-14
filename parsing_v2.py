@@ -6,12 +6,12 @@ import requests
 from fake_useragent import UserAgent
 
 from db_commands import add_bet
-from old.menu_handler_save_db import my_games_fav, send_message_save, strateg1_football
 
 url = '1xstavka.ru/live/volleyball'
 
 url2 = 'https://1xstavka.ru/LiveFeed/Get1x2_VZip?count=10&mode=4&top=true&partner=51'
 
+my_games_fav={}
 
 def count(func):
     """
