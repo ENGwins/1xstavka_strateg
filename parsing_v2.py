@@ -215,9 +215,11 @@ async def info_game_json(game_id):
             with open(f'temp/result_football{game_id}_live.json', 'w',
                       encoding='utf-8') as file:  # файл со всеми играми линии
                 json.dump(result_all, file, sort_keys=True, ensure_ascii=False, indent=4)
-        except:
+        except Exception as ex:
             time.sleep(5)
-            print('Не получилось подключиться в info_game_json')
+
+            print('Не получилось подключиться в info_game_json',game_id)
+            print(ex)
             continue
     return result_all
 
