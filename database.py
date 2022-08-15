@@ -43,7 +43,8 @@ class Bet(TimedBaseModel):
     strateg=db.Column(db.String(50))
     strateg_descr = db.Column(db.String(250))
     game_id = db.Column(db.Integer)
-    comand=db.Column(db.String(250))
+    comand_1=db.Column(db.String(250))
+    comand_2 = db.Column(db.String(250))
     score=db.Column(db.String(250))
     coef = db.Column(db.String(50))
     state=db.Column(db.String(50))
@@ -51,7 +52,7 @@ class Bet(TimedBaseModel):
 
 
 class Admin(TimedBaseModel):
-    __tablename__ = 'forAdmin'
+    __tablename__ = 'forAdmin_bets'
     query: sql.Select
     id = db.Column(db.Integer, db.Sequence('user_id_seq'), primary_key=True)
     user_id = db.Column(db.BigInteger)  # id покупателя

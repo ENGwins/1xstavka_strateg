@@ -6,12 +6,12 @@ from database import create_db1
 from loader import dp
 
 #from menu_handlers import set_default_commands
-from parsing_v2 import parsing_football
+from parsing_v2 import parsing_football, csv_all
 
 
 async def on_startup(dispatcher):
-   # await set_default_commands(dispatcher)
     await create_db1()
+    #await csv_all()
     print('Бот запущен!')
 
 

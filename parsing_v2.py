@@ -4,14 +4,16 @@ import time
 
 import requests
 from fake_useragent import UserAgent
+import xlsxwriter
 
-from db_commands import add_bet
+from db_commands import add_bet, select_all_record
 
 url = '1xstavka.ru/live/volleyball'
 
 url2 = 'https://1xstavka.ru/LiveFeed/Get1x2_VZip?count=10&mode=4&top=true&partner=51'
 
-my_games_fav={}
+my_games_fav = {}
+
 
 def count(func):
     """
@@ -56,6 +58,7 @@ async def parsing_football():
     Здесь происходит отбор матчей по категории футбол
     :return:
     """
+
     agent = UserAgent()
     headers = {
         'Accept': 'application/json, text/plain, */*',
@@ -124,7 +127,8 @@ async def check_win(game_id_all):
                                      'Условие выигрыша': '-'}
             else:  # если игра найдена, смотрим добавлена ли стратегия
                 if MY_GAMES[game_id]['Стратегия'] == 'Не выбрана' \
-                        and MY_GAMES[game_id]['Cотояние'] == 'Не добавлен в игру':  # новая игра
+                        and MY_GAMES[game_id]['Cотояние'] == 'Не добавлен в игру'\
+                        and MY_GAMES[game_id]['Коэффициент'] is not None:  # новая игра
 
                     strateg1, name1 = await strate1(game_dict, game_id)  # проверка на стратегию 1
                     # strateg2, name2 = await strate2(game_dict, game_id)  # проверка на стратегию 2
@@ -142,6 +146,7 @@ async def check_win(game_id_all):
                     # если матч за которым следим по st1 то нужно проверить выигрыш
                     # смотрим пододит ли нам матч
 
+
                 elif MY_GAMES[game_id]['Cотояние'] != 'Проигрыш' \
                         and MY_GAMES[game_id]['Cотояние'] != 'Выигрыш':  # матчи в игре кроме Выигриша и Проигрыша
 
@@ -158,13 +163,17 @@ async def check_win(game_id_all):
 
                         elif MY_GAMES[game_id]['Cотояние'] == 'Выигрыш':
                             print('Точно выигрыш!!!', game_dict[game_id]['Команды'], game_dict[game_id]['Счет'],
-                                  MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'], MY_GAMES[game_id]['Коэффициент'])
+                                  MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'],
+                                  MY_GAMES[game_id]['Коэффициент'])
+
+                            score=game_dict[game_id]['Счет'][0],game_dict[game_id]['Счет'][1]
                             await add_bet(strateg=str(MY_GAMES[game_id]['Стратегия']),
                                           game_id=int(game_id),
-                                          score=str(game_dict[game_id]['Счет']),
-                                          comand=str(game_dict[game_id]['Команды']),
+                                          score=str(score),
+                                          comand_1=str(game_dict[game_id]['Команды'][0]),
+                                          comand_2=str(game_dict[game_id]['Команды'][1]),
                                           state='Выигрыш',
-                                          coef=str(MY_GAMES[game_id]['Коэффициент']))
+                                          coef=MY_GAMES[game_id]['Коэффициент'])
 
                     elif check_win_st1 == 'Не подходит':
                         new_state = test[MY_GAMES[game_id]['Cотояние']]
@@ -178,12 +187,15 @@ async def check_win(game_id_all):
                         elif MY_GAMES[game_id]['Cотояние'] == 'Проигрыш':
                             print('Точно Проигрыш', game_dict[game_id]['Команды'], game_dict[game_id]['Счет'],
                                   MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'])
+
+                            score=game_dict[game_id]['Счет'][0],game_dict[game_id]['Счет'][1]
                             await add_bet(strateg=str(MY_GAMES[game_id]['Стратегия']),
                                           game_id=int(game_id),
-                                          score=str(game_dict[game_id]['Счет']),
-                                          comand=str(game_dict[game_id]['Команды']),
+                                          score=str(score),
+                                          comand_1=str(game_dict[game_id]['Команды'][0]),
+                                          comand_2=str(game_dict[game_id]['Команды'][1]),
                                           state='Проигрыш',
-                                          coef=str(MY_GAMES[game_id]['Коэффициент']))
+                                          coef=MY_GAMES[game_id]['Коэффициент'])
 
 
                 elif game_dict[game_id]['Тайм'] == 'Игра завершена':
@@ -218,7 +230,7 @@ async def info_game_json(game_id):
         except Exception as ex:
             time.sleep(5)
 
-            print('Не получилось подключиться в info_game_json',game_id)
+            print('Не получилось подключиться в info_game_json', game_id)
             print(ex)
             continue
     return result_all
@@ -350,14 +362,40 @@ async def cond_win_strateg1(game_dict, game_id):
 
 
 async def get_coef_strateg1(info_json):
-
-    #print(info_json['Value']['E'])
+    # print(info_json['Value']['E'])
     for i in info_json['Value']['E']:
-        if i['T']==812 and  i['P']==60.001:
-            #print(i['C'],info_json['Value']['O1'])
+        if i['T'] == 812 and i['P'] == 60.001:
+            # print(i['C'],info_json['Value']['O1'])
             return i['C']
         # for n in i['E']:
         #  print(n)
 
         # if i['Key'] == 'ICorner1':
         #  corner.append(i.get('Value', 0))
+
+
+async def csv_all():
+    all_rec = await select_all_record()
+    workbook = xlsxwriter.Workbook('отчет.xlsx')
+    worksheet = workbook.add_worksheet()
+    content = ['Стратегия', 'Команды', 'Cчет','Коэффициент', 'Результат']
+    colm=0
+    for cl in content:
+
+        worksheet.write(0, colm, cl)
+        colm+=1
+
+    row = 1
+
+    for rec in all_rec:
+        item = [rec.strateg, rec.comand, rec.score, float(rec.coef), rec.state]
+        column=0
+        for wr in item:
+            worksheet.write(row, column, wr)
+
+            column += 1
+        row+=1
+
+    workbook.close()
+
+    # print(len(all))
