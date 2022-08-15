@@ -1,5 +1,6 @@
 import datetime
 import json
+import os.path
 import time
 
 import requests
@@ -127,8 +128,7 @@ async def check_win(game_id_all):
                                      'Условие выигрыша': '-'}
             else:  # если игра найдена, смотрим добавлена ли стратегия
                 if MY_GAMES[game_id]['Стратегия'] == 'Не выбрана' \
-                        and MY_GAMES[game_id]['Cотояние'] == 'Не добавлен в игру'\
-                        and MY_GAMES[game_id]['Коэффициент'] is not None:  # новая игра
+                        and MY_GAMES[game_id]['Cотояние'] == 'Не добавлен в игру':  # новая игра
 
                     strateg1, name1 = await strate1(game_dict, game_id)  # проверка на стратегию 1
                     # strateg2, name2 = await strate2(game_dict, game_id)  # проверка на стратегию 2
@@ -166,7 +166,7 @@ async def check_win(game_id_all):
                                   MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'],
                                   MY_GAMES[game_id]['Коэффициент'])
 
-                            score=game_dict[game_id]['Счет'][0],game_dict[game_id]['Счет'][1]
+                            score = game_dict[game_id]['Счет'][0], game_dict[game_id]['Счет'][1]
                             await add_bet(strateg=str(MY_GAMES[game_id]['Стратегия']),
                                           game_id=int(game_id),
                                           score=str(score),
@@ -188,7 +188,7 @@ async def check_win(game_id_all):
                             print('Точно Проигрыш', game_dict[game_id]['Команды'], game_dict[game_id]['Счет'],
                                   MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'])
 
-                            score=game_dict[game_id]['Счет'][0],game_dict[game_id]['Счет'][1]
+                            score = game_dict[game_id]['Счет'][0], game_dict[game_id]['Счет'][1]
                             await add_bet(strateg=str(MY_GAMES[game_id]['Стратегия']),
                                           game_id=int(game_id),
                                           score=str(score),
@@ -203,7 +203,7 @@ async def check_win(game_id_all):
                     print('Удалили из словаря игру ', game_dict[game_id]['Команды'])
 
         except Exception as ex:
-            print(ex)
+            print(ex,'errore')
     # print(MY_GAMES)
 
 
@@ -215,6 +215,11 @@ async def info_game_json(game_id):
 
         'User-Agent': agent.random
     }
+    data = datetime.datetime.now().strftime("%d_%m_%y")
+    if not os.path.exists(f'temp/{data}'):
+        os.makedirs(f'temp/{data}', mode=0o777, exist_ok=False)
+
+
 
     url = f'https://melbet.ru/LiveFeed/GetGameZip?id={game_id}&partner=195'
 
@@ -224,7 +229,7 @@ async def info_game_json(game_id):
             response_ = requests.get(url, headers=headers,
                                      timeout=3)
             result_all = response_.json()
-            with open(f'temp/result_football{game_id}_live.json', 'w',
+            with open(f'temp/{data}/result_football{game_id}_live.json', 'w',
                       encoding='utf-8') as file:  # файл со всеми играми линии
                 json.dump(result_all, file, sort_keys=True, ensure_ascii=False, indent=4)
         except Exception as ex:
@@ -335,7 +340,8 @@ async def strate1(game_dict, game_id):
     total_red_cards = 0
     for card in red_cards:
         total_red_cards += int(card)
-    if total == 0 and taim == '2-й Тайм' and 66 > Minut > 45:
+    if total == 0 and taim == '2-й Тайм' and 63 > Minut > 45 \
+                        and MY_GAMES[game_id]['Коэффициент'] is not None:
         return True, 'st1'
     else:
         return False, 'st1'
@@ -378,23 +384,22 @@ async def csv_all():
     all_rec = await select_all_record()
     workbook = xlsxwriter.Workbook('отчет.xlsx')
     worksheet = workbook.add_worksheet()
-    content = ['Стратегия', 'Команды', 'Cчет','Коэффициент', 'Результат']
-    colm=0
+    content = ['Стратегия', 'Команды', 'Cчет', 'Коэффициент', 'Результат']
+    colm = 0
     for cl in content:
-
         worksheet.write(0, colm, cl)
-        colm+=1
+        colm += 1
 
     row = 1
 
     for rec in all_rec:
         item = [rec.strateg, rec.comand, rec.score, float(rec.coef), rec.state]
-        column=0
+        column = 0
         for wr in item:
             worksheet.write(row, column, wr)
 
             column += 1
-        row+=1
+        row += 1
 
     workbook.close()
 
