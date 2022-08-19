@@ -336,8 +336,8 @@ async def info_game_detal(info_json):
         # await process_game(game_id)
         # print(corner)
 
-        print(comands, corner)
-        print(comands, SEARCH_ITEM)
+       # print(comands, corner)
+       # print(comands, SEARCH_ITEM)
 
     except Exception as ex:
         print(ex)
