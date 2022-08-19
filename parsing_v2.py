@@ -124,8 +124,9 @@ async def check_win(game_id_all):
                                      'Команда 2': game_dict[game_id].get('Команды')[1],
                                      'Cотояние': 'Не добавлен в игру',
                                      'Стратегия': 'Не выбрана',
-                                     'Коэффициент': coef,
+                                     'Коэффициент': str(coef),
                                      'Условие выигрыша': '-'}
+
             else:  # если игра найдена, смотрим добавлена ли стратегия
                 if MY_GAMES[game_id]['Стратегия'] == 'Не выбрана' \
                         and MY_GAMES[game_id]['Cотояние'] == 'Не добавлен в игру':  # новая игра
@@ -173,7 +174,7 @@ async def check_win(game_id_all):
                                           comand_1=str(game_dict[game_id]['Команды'][0]),
                                           comand_2=str(game_dict[game_id]['Команды'][1]),
                                           state='Выигрыш',
-                                          coef=MY_GAMES[game_id]['Коэффициент'])
+                                          coef=str(MY_GAMES[game_id]['Коэффициент']))
 
                     elif check_win_st1 == 'Не подходит':
                         new_state = test[MY_GAMES[game_id]['Cотояние']]
@@ -186,7 +187,9 @@ async def check_win(game_id_all):
                         # запись в БД
                         elif MY_GAMES[game_id]['Cотояние'] == 'Проигрыш':
                             print('Точно Проигрыш', game_dict[game_id]['Команды'], game_dict[game_id]['Счет'],
-                                  MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'])
+                                  MY_GAMES[game_id]['Cотояние'], MY_GAMES[game_id]['Стратегия'],
+                                  MY_GAMES[game_id]['Коэффициент']
+                                  , type(MY_GAMES[game_id]['Коэффициент']))
 
                             score = game_dict[game_id]['Счет'][0], game_dict[game_id]['Счет'][1]
                             await add_bet(strateg=str(MY_GAMES[game_id]['Стратегия']),
@@ -195,7 +198,7 @@ async def check_win(game_id_all):
                                           comand_1=str(game_dict[game_id]['Команды'][0]),
                                           comand_2=str(game_dict[game_id]['Команды'][1]),
                                           state='Проигрыш',
-                                          coef=MY_GAMES[game_id]['Коэффициент'])
+                                          coef=str(MY_GAMES[game_id]['Коэффициент']))
 
 
                 elif game_dict[game_id]['Тайм'] == 'Игра завершена':
@@ -203,7 +206,7 @@ async def check_win(game_id_all):
                     print('Удалили из словаря игру ', game_dict[game_id]['Команды'])
 
         except Exception as ex:
-            print(ex,'errore')
+            print(ex, 'errore')
     # print(MY_GAMES)
 
 
@@ -218,8 +221,6 @@ async def info_game_json(game_id):
     data = datetime.datetime.now().strftime("%d_%m_%y")
     if not os.path.exists(f'temp/{data}'):
         os.makedirs(f'temp/{data}', mode=0o777, exist_ok=False)
-
-
 
     url = f'https://melbet.ru/LiveFeed/GetGameZip?id={game_id}&partner=195'
 
@@ -247,7 +248,7 @@ async def info_game_detal(info_json):
     :param info_json:
     :return:
     """
-    global game_id, Minut
+    global game_id, Minut, SEARCH_ITEM
 
     game_dict = {}
     try:
@@ -260,8 +261,14 @@ async def info_game_detal(info_json):
         freeKick = []  # штрафные
         red_cards = []
         yel_cards = []
+        test_ = []
+
+
 
         for i in info_json['Value']['SC']['S']:
+            value = i.get('Value', 0)
+            key = i['Key']
+
             if i['Key'] == 'ICorner1':
                 corner.append(i.get('Value', 0))
             elif i['Key'] == 'ICorner2':
@@ -318,6 +325,10 @@ async def info_game_detal(info_json):
         # здесь будут критерии отбора в process_game передаем id нужной игры
         # await process_game(game_id)
         # print(corner)
+
+        print(comands, corner)
+        print(comands, SEARCH_ITEM)
+
     except Exception as ex:
         print(ex)
     return game_dict
@@ -341,7 +352,7 @@ async def strate1(game_dict, game_id):
     for card in red_cards:
         total_red_cards += int(card)
     if total == 0 and taim == '2-й Тайм' and 63 > Minut > 45 \
-                        and MY_GAMES[game_id]['Коэффициент'] is not None:
+            and MY_GAMES[game_id]['Коэффициент'] is not None:
         return True, 'st1'
     else:
         return False, 'st1'
