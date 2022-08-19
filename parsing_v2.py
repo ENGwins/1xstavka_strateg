@@ -242,13 +242,17 @@ async def info_game_json(game_id):
     return result_all
 
 
+async def get_event(key,json_file):
+    return json_file.get(key,'-')
+
+
 async def info_game_detal(info_json):
     """
     возвращает словарь игры
     :param info_json:
     :return:
     """
-    global game_id, Minut, SEARCH_ITEM
+    global game_id, Minut, SEARCH_ITEM, end, start
 
     game_dict = {}
     try:
@@ -266,8 +270,11 @@ async def info_game_detal(info_json):
 
 
         for i in info_json['Value']['SC']['S']:
+            start=time.perf_counter()
             value = i.get('Value', 0)
             key = i['Key']
+
+            #cor = map(await get_event('Value'), info_json['Value']['SC']['S'])
 
             if i['Key'] == 'ICorner1':
                 corner.append(i.get('Value', 0))
@@ -305,6 +312,9 @@ async def info_game_detal(info_json):
                 red_cards.append(i.get('Value', 0))
             elif i['Key'] == 'IRedCard2':
                 red_cards.append(i.get('Value', 0))
+            end=time.perf_counter()
+
+        #print(end-start)
 
         score = [result_all['Value']['SC']['FS'].get('S1', 0), result_all['Value']['SC']['FS'].get('S2', 0)]
 

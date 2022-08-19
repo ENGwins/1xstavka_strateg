@@ -57,7 +57,7 @@ class Admin(TimedBaseModel):
     id = db.Column(db.Integer, db.Sequence('user_id_seq'), primary_key=True)
     user_id = db.Column(db.BigInteger)  # id покупателя
     user_first_name = db.Column(db.String(50))
-    user_last_name = db.Column(db.String(50))\
+    user_last_name = db.Column(db.String(50))
     # basket = db.Column(JSON)
 
     def __repr__(self):
