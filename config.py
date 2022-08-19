@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 #BOT_TOKEN='5574885553:AAFlK1OuEZjkfuBvTpiUK-cCZSrqM8m7Y1U'      #@testing_elv_bot
-#BOT_TOKEN='5520673030:AAE_kaXiXlajkJ1FQEyCdekykaRiDHUlRMA'      #Слон
-BOT_TOKEN='5398224643:AAEWOrQQLhtYlWHsdGzT2T1dR27st8FfRlg'      #my_parser
+BOT_TOKEN='5520673030:AAE_kaXiXlajkJ1FQEyCdekykaRiDHUlRMA'      #Слон
+#BOT_TOKEN='5398224643:AAEWOrQQLhtYlWHsdGzT2T1dR27st8FfRlg'      #my_parser
 
 admin=644812536
 
